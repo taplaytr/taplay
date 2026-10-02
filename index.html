@@ -5,50 +5,72 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>TAPLAY</title>
 <style>
-:root{--bg:#f4f5f7;--card:#fff;--text:#111;--muted:#6b7280;--accent:#2563eb;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1115;--card:#1a1d24;--text:#f3f4f6;--muted:#9ca3af;--accent:#60a5fa}}
-:root[data-theme="dark"]{--bg:#0f1115;--card:#1a1d24;--text:#f3f4f6;--muted:#9ca3af;--accent:#60a5fa}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);color:var(--text);font-family:-apple-system,system-ui,"Segoe UI",Roboto,sans-serif;padding:20px}
-.card{width:100%;max-width:380px;background:var(--card);border-radius:20px;padding:28px 22px;box-shadow:0 8px 30px rgba(0,0,0,.08);text-align:center}
-.bank{color:var(--muted);font-size:14px;margin:0 0 4px}
-.brand{font-size:13px;font-weight:700;letter-spacing:3px;color:var(--accent);margin:0 0 14px}
-h1{font-size:22px;margin:0 0 22px}
-.iban{font-family:ui-monospace,Menlo,monospace;font-size:17px;letter-spacing:.5px;word-break:break-word;background:var(--bg);border-radius:12px;padding:16px 10px;margin-bottom:18px}
-button{width:100%;border:0;border-radius:12px;padding:16px;font-size:17px;font-weight:600;background:var(--accent);color:#fff;cursor:pointer}
-button.ok{background:#16a34a;color:#fff}
-button.sec{margin-top:10px;background:var(--bg);color:var(--text)}
+:root{--bur:#0b2252;--bur2:#061233;--gold:#d4af37;--gold2:#f3c669;--cream:#f3f5fa;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;min-height:100vh;background:var(--cream);color:#2d2727;font-family:-apple-system,system-ui,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+.card{width:100%;max-width:400px;background:var(--bur);color:#fff;border-radius:26px;padding:24px;border:1px solid rgba(212,175,55,.35);box-shadow:0 15px 35px -5px rgba(11,34,82,.3);position:relative;overflow:hidden}
+.card:before{content:"";position:absolute;top:-50px;right:-50px;width:160px;height:160px;border-radius:50%;background:rgba(212,175,55,.12);filter:blur(20px)}
+.top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;position:relative}
+h1{font-family:Georgia,"Times New Roman",serif;font-size:22px;margin:0;color:var(--gold2);letter-spacing:.5px}
+.sub{font-size:10px;letter-spacing:2px;text-transform:uppercase;opacity:.75;margin-top:4px}
+.chip{width:40px;height:30px;border-radius:6px;background:linear-gradient(135deg,#bf953f,#fcf6ba 30%,#b38728 60%,#aa771c);opacity:.9;flex:none}
+.box{background:rgba(6,18,51,.6);border:1px solid rgba(212,175,55,.2);border-radius:16px;padding:14px;margin-bottom:14px;position:relative}
+.lbl{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold2);font-weight:600;margin-bottom:4px}
+.val{font-weight:700;font-size:17px;word-break:break-word;user-select:all;-webkit-user-select:all}
+.iban{font-family:ui-monospace,Menlo,monospace;letter-spacing:1px;line-height:1.5}
+.btns{margin-top:18px;display:grid;gap:10px;position:relative}
+button{width:100%;border:0;border-radius:14px;padding:15px;font-size:16px;font-weight:700;cursor:pointer;transition:transform .1s}
+button:active{transform:scale(.98)}
+.b1{background:linear-gradient(90deg,#d4af37,#f3c669,#d4af37);color:var(--bur2)}
+.b2{background:var(--cream);color:var(--bur);border:1px solid #d9e0ee}
+.foot{margin-top:18px;font-size:12px;color:#6b6460;text-align:center}
+.foot b{color:var(--bur)}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,80px);opacity:0;background:var(--bur2);color:#fff;border:1px solid var(--gold);padding:12px 20px;border-radius:16px;font-size:14px;font-weight:600;transition:all .3s;pointer-events:none;max-width:90%}
+#toast.on{transform:translate(-50%,0);opacity:1}
 </style>
 </head>
 <body>
-<div class="card">
-  <p class="brand">TAPLAY</p>
-  <p class="bank" id="bank" hidden></p>
-  <h1 id="name"></h1>
-  <div class="iban" id="iban"></div>
-  <button id="btn">IBAN'ı Kopyala</button>
-  <button id="nbtn" class="sec">İsmi Kopyala</button>
+<div class="card" id="card">
+  <div class="top">
+    <div>
+      <h1 id="title">TAPLAY</h1>
+      <div class="sub">Banka Havale / EFT Bilgileri</div>
+    </div>
+    <div class="chip"></div>
+  </div>
+  <div class="box">
+    <div class="lbl">Alıcı Adı / Ticari Unvan</div>
+    <div class="val" id="name"></div>
+  </div>
+  <div class="box">
+    <div class="lbl" id="ibanlbl">IBAN Numarası</div>
+    <div class="val iban" id="iban"></div>
+  </div>
+  <div class="btns">
+    <button class="b1" id="b-name">Adı Kopyala</button>
+    <button class="b2" id="b-iban">IBAN'ı Kopyala</button>
+  </div>
 </div>
+<div class="foot">Bu sayfa <b>TAPLAY</b> tarafından hazırlanmıştır.</div>
+<div id="toast"></div>
 <script>
-var q = new URLSearchParams(location.search);
-var NAME = q.get("ad") || "";
-var BANK = q.get("banka") || "";
-var IBAN = q.get("iban") || "";
-var raw = IBAN.replace(/\s/g,"").toUpperCase();
-if(!raw){document.querySelector(".card").innerHTML='<p class="brand">TAPLAY</p><h1>Bilgi bulunamadı</h1>';throw new Error("no data")}
-document.getElementById("name").textContent = NAME;
-if(BANK){var b=document.getElementById("bank");b.textContent=BANK;b.hidden=false}
-document.getElementById("iban").textContent = raw.replace(/(.{4})/g,"$1 ").trim();
-function setup(id,text,label){
-  var btn=document.getElementById(id);
-  btn.onclick=function(){
-    function done(){btn.textContent="Kopyalandı ✓";btn.classList.add("ok");setTimeout(function(){btn.textContent=label;btn.classList.remove("ok")},2000)}
-    function fallback(){var t=document.createElement("textarea");t.value=text;document.body.appendChild(t);t.select();try{document.execCommand("copy");done()}catch(e){}document.body.removeChild(t)}
-    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done,fallback)}else{fallback()}
-  };
+function dec(v){v=v||"";try{for(var i=0;i<3;i++){if(/%[0-9A-Fa-f]{2}/.test(v))v=decodeURIComponent(v)}}catch(e){}return v.trim()}
+var q=new URLSearchParams(location.search);
+var NAME=dec(q.get("ad")),BANK=dec(q.get("banka")),BIZ=dec(q.get("isletme"));
+var raw=dec(q.get("iban")).replace(/\s/g,"").toUpperCase();
+if(!raw){document.getElementById("card").innerHTML='<h1>TAPLAY</h1><div class="sub" style="margin-top:10px">Bilgi bulunamadı</div>';throw new Error("no data")}
+document.getElementById("title").textContent=BIZ||"TAPLAY";
+document.getElementById("name").textContent=NAME;
+document.getElementById("iban").textContent=raw.replace(/(.{4})/g,"$1 ").trim();
+if(BANK)document.getElementById("ibanlbl").textContent="IBAN · "+BANK;
+var tt;
+function toast(m){var t=document.getElementById("toast");t.textContent=m;t.className="on";clearTimeout(tt);tt=setTimeout(function(){t.className=""},2500)}
+function copy(text,msg){
+  function fb(){var a=document.createElement("textarea");a.value=text;a.style.position="fixed";a.style.left="-9999px";document.body.appendChild(a);a.select();try{document.execCommand("copy");toast(msg)}catch(e){toast("Seçerek kopyalayabilirsiniz")}document.body.removeChild(a)}
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(function(){toast(msg)},fb)}else{fb()}
 }
-setup("btn",raw,"IBAN'ı Kopyala");
-setup("nbtn",NAME,"İsmi Kopyala");
+document.getElementById("b-name").onclick=function(){copy(NAME,"Alıcı adı kopyalandı ✓")};
+document.getElementById("b-iban").onclick=function(){copy(raw,"IBAN kopyalandı ✓")};
 </script>
 </body>
 </html>
