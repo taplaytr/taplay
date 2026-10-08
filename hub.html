@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TAPLAY</title>
+<style>
+:root{--gold:#d4af37;--gold2:#f3d98b;--bg:#050505;--line:rgba(212,175,55,.28);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% 0%,#1c1708 0,var(--bg) 55%);color:#f2efe8;font-family:-apple-system,system-ui,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column;align-items:center;padding:28px 20px}
+.wrap{width:100%;max-width:400px}
+.head{text-align:center;margin-bottom:22px}
+h1{font-family:Georgia,"Times New Roman",serif;font-size:28px;margin:0;font-weight:700;background:linear-gradient(90deg,#b8892b,#f3d98b,#d4af37);-webkit-background-clip:text;background-clip:text;color:transparent;word-break:break-word}
+.sub{font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#8d877a;margin-top:8px}
+.lk{display:flex;align-items:center;gap:14px;background:linear-gradient(160deg,#18181a,#0c0c0d);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;color:#fff;text-decoration:none;font-weight:700;font-size:16px}
+.lk:active{transform:scale(.98)}
+.ic{width:38px;height:38px;border-radius:12px;background:rgba(212,175,55,.12);display:flex;align-items:center;justify-content:center;font-size:19px;flex:none}
+.ar{margin-left:auto;color:var(--gold);font-size:20px}
+.card{background:linear-gradient(160deg,#18181a,#0c0c0d);border:1px solid var(--line);border-radius:22px;padding:18px;margin-top:6px}
+.ct{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:12px}
+.row{display:flex;align-items:center;gap:10px;background:#09090a;border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px}
+.info{flex:1;min-width:0}
+.lbl{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:4px}
+.val{font-weight:700;font-size:15px;word-break:break-word}
+.iban{font-family:ui-monospace,Menlo,monospace;font-size:14px;letter-spacing:.5px;line-height:1.5}
+.cp{flex:none;border:1px solid var(--gold);background:transparent;color:var(--gold2);border-radius:12px;padding:10px 12px;font-size:13px;font-weight:700;cursor:pointer;min-width:74px}
+.cp.ok{background:var(--gold);color:#111}
+.foot{margin-top:20px;font-size:12px;color:#6f6a60;text-align:center}
+.foot b{color:var(--gold)}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,80px);opacity:0;background:#16130a;color:var(--gold2);border:1px solid var(--gold);padding:12px 20px;border-radius:16px;font-size:14px;font-weight:600;transition:all .3s;pointer-events:none}
+#toast.on{transform:translate(-50%,0);opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head"><h1 id="title">TAPLAY</h1><div class="sub" id="sub"></div></div>
+  <div id="links"></div>
+  <div class="card" id="ibancard" hidden>
+    <div class="ct">Banka Havale / EFT</div>
+    <div class="row"><div class="info"><div class="lbl">Alıcı Adı / Ticari Unvan</div><div class="val" id="name"></div></div><button class="cp" id="b-name">Kopyala</button></div>
+    <div class="row"><div class="info"><div class="lbl" id="ibanlbl">IBAN</div><div class="val iban" id="iban"></div></div><button class="cp" id="b-iban">Kopyala</button></div>
+  </div>
+  <div class="foot">Bu sayfa <b>TAPLAY</b> tarafından hazırlanmıştır.</div>
+</div>
+<div id="toast"></div>
+<script>
+function dec(v){v=v||"";try{for(var i=0;i<3;i++){if(/%[0-9A-Fa-f]{2}/.test(v))v=decodeURIComponent(v)}}catch(e){}return v.trim()}
+var q=new URLSearchParams(location.search);
+function g(k){return dec(q.get(k))}
+var BIZ=g("isletme"),NAME=g("ad"),BANK=g("banka"),raw=g("iban").replace(/\s/g,"").toUpperCase();
+var insta=g("insta").replace(/^@/,"").replace(/[^A-Za-z0-9._]/g,"");
+var google=g("google").replace(/^https?:\/\//,"");
+var tel=g("tel").replace(/[^0-9+]/g,"");
+var wp=g("wp").replace(/[^0-9]/g,"");
+var harita=g("harita").replace(/^https?:\/\//,"");
+document.getElementById("title").textContent=BIZ||"TAPLAY";
+document.getElementById("sub").textContent=g("slogan")||"Bağlantılar";
+var L=document.getElementById("links");
+function add(ic,text,href){var a=document.createElement("a");a.className="lk";a.href=href;a.target="_blank";a.rel="noopener";var s=document.createElement("span");s.className="ic";s.textContent=ic;var t=document.createElement("span");t.textContent=text;var r=document.createElement("span");r.className="ar";r.textContent="›";a.appendChild(s);a.appendChild(t);a.appendChild(r);L.appendChild(a)}
+if(insta)add("📷","Instagram","https://instagram.com/"+insta);
+if(google)add("⭐","Google'da Yorum Yap","https://"+google);
+if(harita)add("📍","Konum / Yol Tarifi","https://"+harita);
+if(wp)add("💬","WhatsApp","https://wa.me/"+wp);
+if(tel)add("📞","Ara",("tel:"+tel));
+if(raw){
+  document.getElementById("ibancard").hidden=false;
+  document.getElementById("name").textContent=NAME;
+  document.getElementById("iban").textContent=raw.replace(/(.{4})/g,"$1 ").trim();
+  if(BANK)document.getElementById("ibanlbl").textContent="IBAN · "+BANK;
+}
+if(!L.children.length&&!raw){L.innerHTML='<div class="foot">Bilgi bulunamadı</div>'}
+var tt;
+function toast(m){var t=document.getElementById("toast");t.textContent=m;t.className="on";clearTimeout(tt);tt=setTimeout(function(){t.className=""},2500)}
+function copy(btn,text,msg){
+  function done(){toast(msg);btn.textContent="✓";btn.classList.add("ok");setTimeout(function(){btn.textContent="Kopyala";btn.classList.remove("ok")},1800)}
+  function fb(){var a=document.createElement("textarea");a.value=text;a.style.position="fixed";a.style.left="-9999px";document.body.appendChild(a);a.select();try{document.execCommand("copy");done()}catch(e){toast("Seçerek kopyalayabilirsiniz")}document.body.removeChild(a)}
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done,fb)}else{fb()}
+}
+var bn=document.getElementById("b-name"),bi=document.getElementById("b-iban");
+bn.onclick=function(){copy(bn,NAME,"Alıcı adı kopyalandı ✓")};
+bi.onclick=function(){copy(bi,raw,"IBAN kopyalandı ✓")};
+</script>
+</body>
+</html>
