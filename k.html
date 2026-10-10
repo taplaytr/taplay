@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TAPLAY</title>
+<style>
+:root{--g:#d4af37;--g2:#f3d98b;--l:rgba(212,175,55,.28);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% 0,#1c1708,#050505 55%);color:#f2efe8;font-family:-apple-system,system-ui,"Segoe UI",Roboto,sans-serif;display:flex;justify-content:center;padding:28px 20px}
+.w{width:100%;max-width:400px}.h{text-align:center;margin-bottom:22px}
+h1{font-family:Georgia,serif;font-size:28px;margin:0;background:linear-gradient(90deg,#b8892b,#f3d98b,#d4af37);-webkit-background-clip:text;background-clip:text;color:transparent;word-break:break-word}
+.s{font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#8d877a;margin-top:8px}
+.lk{display:flex;align-items:center;gap:14px;background:linear-gradient(160deg,#18181a,#0c0c0d);border:1px solid var(--l);border-radius:18px;padding:16px;margin-bottom:12px;color:#fff;text-decoration:none;font-weight:700;font-size:16px}
+.ic{width:38px;height:38px;border-radius:12px;background:rgba(212,175,55,.12);display:flex;align-items:center;justify-content:center;font-size:19px;flex:none}
+.ar{margin-left:auto;color:var(--g);font-size:20px}
+.cd{background:linear-gradient(160deg,#18181a,#0c0c0d);border:1px solid var(--l);border-radius:22px;padding:18px;margin-top:6px}
+.ct{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--g);font-weight:700;margin-bottom:12px}
+.r{display:flex;align-items:center;gap:10px;background:#09090a;border:1px solid var(--l);border-radius:14px;padding:12px;margin-bottom:10px}
+.i{flex:1;min-width:0}.lb{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--g);font-weight:600;margin-bottom:4px}
+.v{font-weight:700;font-size:15px;word-break:break-word}.ib{font-family:ui-monospace,Menlo,monospace;font-size:14px;line-height:1.5}
+.cp{flex:none;border:1px solid var(--g);background:0;color:var(--g2);border-radius:12px;padding:10px 12px;font-size:13px;font-weight:700;min-width:74px}
+.cp.ok{background:var(--g);color:#111}
+.f{margin-top:20px;font-size:12px;color:#6f6a60;text-align:center}.f b{color:var(--g)}
+#t{position:fixed;left:50%;bottom:24px;transform:translate(-50%,80px);opacity:0;background:#16130a;color:var(--g2);border:1px solid var(--g);padding:12px 20px;border-radius:16px;font-size:14px;font-weight:600;transition:.3s;pointer-events:none}
+#t.on{transform:translate(-50%,0);opacity:1}
+</style>
+</head>
+<body>
+<div class="w">
+<div class="h"><h1 id="ti">TAPLAY</h1><div class="s" id="su"></div></div>
+<div id="L"></div>
+<div class="cd" id="B" hidden><div class="ct">Banka Havale / EFT</div>
+<div class="r"><div class="i"><div class="lb">Alıcı Adı / Ticari Unvan</div><div class="v" id="nm"></div></div><button class="cp" id="bn">Kopyala</button></div>
+<div class="r"><div class="i"><div class="lb" id="bl">IBAN</div><div class="v ib" id="ib"></div></div><button class="cp" id="bi">Kopyala</button></div></div>
+<div class="f">Bu sayfa <b>TAPLAY</b> tarafından hazırlanmıştır.</div>
+</div>
+<div id="t"></div>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getFirestore,doc,getDoc,updateDoc,increment} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const db=getFirestore(initializeApp({apiKey:"AIzaSyBBv49ONX6jrE2Q98VuAGWoQmrJ0748Z9Y",authDomain:"taplay-c75bf.firebaseapp.com",projectId:"taplay-c75bf",appId:"1:53700546921:web:9f7eac1035557387a26df8"}));
+const $=i=>document.getElementById(i);
+const code=(new URLSearchParams(location.search).get("c")||"").toLowerCase().replace(/[^a-z0-9]/g,"");
+function fail(m){$("L").innerHTML="";const d=document.createElement("div");d.className="f";d.textContent=m;$("L").appendChild(d)}
+let tt;function toast(m){const t=$("t");t.textContent=m;t.className="on";clearTimeout(tt);tt=setTimeout(()=>t.className="",2500)}
+function copy(b,x,m){const ok=()=>{toast(m);b.textContent="✓";b.classList.add("ok");setTimeout(()=>{b.textContent="Kopyala";b.classList.remove("ok")},1800)};
+const fb=()=>{const a=document.createElement("textarea");a.value=x;a.style.cssText="position:fixed;left:-9999px";document.body.appendChild(a);a.select();try{document.execCommand("copy");ok()}catch(e){toast("Seçerek kopyalayın")}a.remove()};
+navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(x).then(ok,fb):fb()}
+function add(ic,tx,h){const a=document.createElement("a");a.className="lk";a.href=h;a.target="_blank";a.rel="noopener";
+a.innerHTML='<span class="ic"></span><span></span><span class="ar">›</span>';a.children[0].textContent=ic;a.children[1].textContent=tx;$("L").appendChild(a)}
+const u=s=>"https://"+String(s||"").trim().replace(/^https?:\/\//i,"");
+(async()=>{
+if(!code)return fail("Bilgi bulunamadı");
+try{
+const ref=doc(db,"cards",code),s=await getDoc(ref);
+if(!s.exists()||s.data().aktif===false)return fail("Bilgi bulunamadı");
+const d=s.data();
+$("ti").textContent=d.isletme||"TAPLAY";$("su").textContent=d.slogan||"";
+if(d.insta)add("📷","Instagram","https://instagram.com/"+encodeURIComponent(d.insta));
+if(d.whatsapp)add("💬","WhatsApp","https://wa.me/"+String(d.whatsapp).replace(/\D/g,""));
+if(d.google)add("⭐","Google'da Yorum Yap",u(d.google));
+if(d.harita)add("📍","Konum / Yol Tarifi",u(d.harita));
+if(d.web)add("🌐","Web Sitemiz",u(d.web));
+if(d.trip)add("🧭","Tripadvisor",u(d.trip));
+if(d.tel)add("📞","Ara","tel:"+String(d.tel).replace(/[^0-9+]/g,""));
+if(d.iban){const r=String(d.iban).replace(/\s/g,"").toUpperCase();$("B").hidden=false;$("nm").textContent=d.ad||"";
+$("ib").textContent=r.replace(/(.{4})/g,"$1 ").trim();if(d.banka)$("bl").textContent="IBAN · "+d.banka;
+$("bn").onclick=()=>copy($("bn"),d.ad||"","Alıcı adı kopyalandı ✓");$("bi").onclick=()=>copy($("bi"),r,"IBAN kopyalandı ✓")}
+try{if(!sessionStorage.getItem("o"+code)){sessionStorage.setItem("o"+code,"1");updateDoc(ref,{okutma:increment(1)}).catch(()=>{})}}catch(e){}
+}catch(e){fail("Bağlantı hatası, tekrar deneyin")}
+})();
+</script>
+</body>
+</html>

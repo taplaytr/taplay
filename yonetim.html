@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>TAPLAY Yönetim</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0b0b0c;color:#f2efe8;font-family:-apple-system,system-ui,sans-serif;padding:18px;padding-top:calc(18px + env(safe-area-inset-top,0px))}
+.w{max-width:520px;margin:0 auto}h1{color:#d4af37;font-size:22px;margin:0 0 14px}
+input,button,textarea{font:inherit}input[type=text],input[type=email],input[type=password],input[type=search]{width:100%;background:#161618;border:1px solid #3a3320;color:#fff;border-radius:12px;padding:13px;margin:4px 0 10px;font-size:16px}
+label{font-size:12px;color:#d4af37;letter-spacing:.5px}
+.b{background:#d4af37;color:#111;border:0;border-radius:12px;padding:13px 16px;font-weight:700;font-size:15px;margin:4px 6px 4px 0}
+.b2{background:#1c1c1f;color:#f3d98b;border:1px solid #3a3320}.bd{background:#3a1010;color:#ff9b9b;border:1px solid #6a2020}
+.it{background:#141416;border:1px solid #2c2616;border-radius:14px;padding:13px;margin-bottom:9px}.it small{color:#8d877a}
+.it.off{opacity:.5}.row{display:flex;justify-content:space-between;gap:8px;align-items:center}
+#m{color:#f3d98b;font-size:14px;margin:8px 0;min-height:18px}.bar{display:flex;flex-wrap:wrap;margin-bottom:10px}
+</style>
+</head>
+<body>
+<div class="w">
+<h1>TAPLAY Yönetim</h1>
+<div id="login">
+<label>E-posta</label><input type="email" id="em" autocomplete="username">
+<label>Şifre</label><input type="password" id="pw" autocomplete="current-password">
+<button class="b" id="go">Giriş yap</button>
+</div>
+<div id="app" hidden>
+<div class="bar"><button class="b" id="nw">+ Yeni işletme</button><button class="b b2" id="bk">Yedek indir</button><button class="b b2" id="lo">Çıkış</button></div>
+<input type="search" id="q" placeholder="İşletme ara...">
+<div id="ls"></div>
+<div id="ed" hidden></div>
+</div>
+<div id="m"></div>
+</div>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth,signInWithEmailAndPassword,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getFirestore,collection,getDocs,doc,getDoc,setDoc,updateDoc,deleteDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const ap=initializeApp({apiKey:"AIzaSyBBv49ONX6jrE2Q98VuAGWoQmrJ0748Z9Y",authDomain:"taplay-c75bf.firebaseapp.com",projectId:"taplay-c75bf",appId:"1:53700546921:web:9f7eac1035557387a26df8"});
+const auth=getAuth(ap),db=getFirestore(ap),$=i=>document.getElementById(i);
+const F=[["isletme","İşletme adı"],["slogan","Alt başlık (isteğe bağlı)"],["insta","Instagram kullanıcı adı"],["whatsapp","WhatsApp (905xxxxxxxxx)"],["tel","Telefon (+905xxxxxxxxx)"],["google","Google yorum linki"],["harita","Konum linki"],["web","Web sitesi"],["trip","Tripadvisor linki"],["ad","IBAN alıcı adı / unvan"],["banka","Banka adı"],["iban","IBAN"]];
+const BASE=location.href.replace(/[^/]*$/,"")+"k.html?c=";
+let ALL=[];const msg=t=>$("m").textContent=t;
+function ibanOk(i){i=i.replace(/\s/g,"").toUpperCase();if(!/^TR\d{24}$/.test(i))return false;const r=i.slice(4)+i.slice(0,4);let n=0;for(const c of r){n=(n*(/\d/.test(c)?10:100)+parseInt(c,36))%97}return n===1}
+function gen(){const a="abcdefghjkmnpqrstuvwxyz23456789";let s="";const x=new Uint32Array(6);crypto.getRandomValues(x);for(const v of x)s+=a[v%a.length];return s}
+$("go").onclick=async()=>{msg("Giriş yapılıyor...");try{await signInWithEmailAndPassword(auth,$("em").value.trim(),$("pw").value);msg("")}catch(e){msg("Giriş başarısız: e-posta ya da şifre hatalı")}};
+$("lo").onclick=()=>signOut(auth);
+onAuthStateChanged(auth,u=>{$("login").hidden=!!u;$("app").hidden=!u;if(u)load()});
+async function load(){try{const s=await getDocs(collection(db,"cards"));ALL=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.isletme||"").localeCompare(b.isletme||"","tr"));draw()}catch(e){msg("Liste okunamadı: kurallarda e-postanı kontrol et")}}
+function draw(){const q=$("q").value.toLowerCase();$("ls").innerHTML="";ALL.filter(c=>(c.isletme||"").toLowerCase().includes(q)||c.id.includes(q)).forEach(c=>{const d=document.createElement("div");d.className="it"+(c.aktif===false?" off":"");d.innerHTML='<div class="row"><b></b><small></small></div><small></small>';d.children[0].children[0].textContent=c.isletme||"(adsız)";d.children[0].children[1].textContent=(c.okutma||0)+" okutma";d.children[1].textContent="Kod: "+c.id;d.onclick=()=>edit(c.id,c);$("ls").appendChild(d)})}
+$("q").oninput=draw;
+$("nw").onclick=()=>edit(gen(),null);
+function edit(id,c){msg("");const e=$("ed");e.hidden=false;e.innerHTML="";const d=c||{};
+const h=document.createElement("div");h.innerHTML='<h1></h1>';h.firstChild.textContent=(c?"Düzenle: ":"Yeni kayıt: ")+id;e.appendChild(h);
+F.forEach(([k,l])=>{const lb=document.createElement("label");lb.textContent=l;const i=document.createElement("input");i.type="text";i.id="f_"+k;i.value=d[k]||"";e.appendChild(lb);e.appendChild(i)});
+const lb=document.createElement("label");lb.textContent="Aktif";const ck=document.createElement("input");ck.type="checkbox";ck.id="f_aktif";ck.checked=d.aktif!==false;e.appendChild(lb);e.appendChild(ck);
+const link=document.createElement("input");link.type="text";link.readOnly=true;link.value=BASE+id;link.style.marginTop="12px";e.appendChild(link);
+const bs=document.createElement("div");bs.className="bar";
+const mk=(t,cl,fn)=>{const b=document.createElement("button");b.className="b "+cl;b.textContent=t;b.onclick=fn;bs.appendChild(b)};
+mk("Kaydet","",async()=>{const o={};F.forEach(([k])=>o[k]=$("f_"+k).value.trim());
+o.insta=o.insta.replace(/^.*instagram\.com\//i,"").replace(/[@\/?].*$/,"");o.whatsapp=o.whatsapp.replace(/\D/g,"");o.iban=o.iban.replace(/\s/g,"").toUpperCase();
+["google","harita","web","trip"].forEach(k=>o[k]=o[k].replace(/^https?:\/\//i,""));o.aktif=$("f_aktif").checked;
+if(o.iban&&!ibanOk(o.iban)&&!confirm("IBAN geçersiz görünüyor (hane sayısı ya da kontrol hanesi). Yine de kaydedilsin mi?"))return;
+try{if(c)await updateDoc(doc(db,"cards",id),o);else await setDoc(doc(db,"cards",id),{...o,okutma:0,olusturma:serverTimestamp()});msg("Kaydedildi ✓ Kart linki: "+BASE+id);e.hidden=true;load()}catch(x){msg("Kaydedilemedi: "+x.code)}});
+mk("Linki kopyala","b2",()=>{navigator.clipboard.writeText(BASE+id).then(()=>msg("Link kopyalandı ✓"),()=>{link.select();msg("Linki seçip kopyalayın")})});
+if(c)mk("Sil","bd",async()=>{if(confirm("Bu kayıt silinsin mi? Karttaki link çalışmaz olur.")){await deleteDoc(doc(db,"cards",id));e.hidden=true;load()}});
+mk("Kapat","b2",()=>e.hidden=true);e.appendChild(bs);e.scrollIntoView()}
+$("bk").onclick=()=>{const b=new Blob([JSON.stringify(ALL,null,1)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="taplay-yedek-"+new Date().toISOString().slice(0,10)+".json";a.click()};
+</script>
+</body>
+</html>
