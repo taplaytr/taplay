@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>TaPlay</title>
+<style>
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0b0c0f;color:#eef0ea;font:500 16px/1.5 -apple-system,system-ui,"Segoe UI",Roboto,sans-serif;text-align:center;padding:24px}
+#m{display:none}h1{font-size:22px;margin:0 0 8px}p{color:#8e94a1;margin:0 0 20px}
+a{display:inline-block;background:#c8ff3d;color:#0b0c0f;text-decoration:none;font-weight:700;padding:12px 20px;border-radius:999px}
+</style>
+<script>
+/* Dosya adi buyuk/kucuk harfle yuklenmis olsa bile dogru sayfaya yonlendirir.
+   Ornek: kart linki /k.html?c=... ama GitHub'da dosya "K.html" ise oraya gider. */
+(function(){
+  var path=location.pathname, rest=location.search+location.hash;
+  if(sessionStorage.getItem("tp404")===path){show();return}
+  var name=path.split("/").pop()||"index.html", dir=path.slice(0,path.length-(path.split("/").pop()||"").length);
+  if(!/\.html?$/i.test(name))name=name?name+".html":"index.html";
+  var low=name.toLowerCase(), cap=low.charAt(0).toUpperCase()+low.slice(1), up=low.replace(/\.html?$/,"").toUpperCase()+".html";
+  var tries=[], seen={};
+  [low,cap,up].forEach(function(n){var u=dir+n;if(u!==path&&!seen[u]){seen[u]=1;tries.push(u)}});
+  function next(i){
+    if(i>=tries.length){show();return}
+    fetch(tries[i],{method:"HEAD",cache:"no-store"}).then(function(r){
+      if(r.ok){sessionStorage.setItem("tp404",tries[i]);location.replace(tries[i]+rest)}else next(i+1)
+    }).catch(function(){next(i+1)})
+  }
+  function show(){var f=function(){document.getElementById("m").style.display="block"};if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",f);else f()}
+  next(0);
+})();
+</script>
+</head>
+<body>
+<div id="m">
+<h1>Sayfa bulunamadı</h1>
+<p>Aradığın sayfa taşınmış ya da kaldırılmış olabilir.</p>
+<a href="/">Ana sayfaya dön</a>
+</div>
+</body>
+</html>
